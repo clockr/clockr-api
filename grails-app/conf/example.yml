@@ -1,0 +1,35 @@
+dataSource:
+  dbCreate: none
+  url: "jdbc:mysql://dbhost:3306/dbname?zeroDateTimeBehavior=convertToNull&serverTimezone=UTC"
+  driverClassName: com.mysql.cj.jdbc.Driver
+  dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+  username: "dbuser"
+  password: "dbpw"
+  properties:
+    jmxEnabled: true
+    initialSize: 5
+    maxActive: 50
+    minIdle: 5
+    maxIdle: 25
+    maxWait: 10000
+    maxAge: 600000
+    timeBetweenEvictionRunsMillis: 5000
+    minEvictableIdleTimeMillis: 60000
+    validationQuery: "SELECT 1"
+    validationQueryTimeout: 3
+    validationInterval: 15000
+    testOnBorrow: true
+    testWhileIdle: true
+    testOnReturn: false
+    jdbcInterceptors: "ConnectionState;StatementCache(max=200)"
+grails:
+  plugin:
+    springsecurity:
+      rest:
+        token:
+          storage:
+            jwt:
+              secret: secretKey
+initialAdminUser:
+  email: 'admin@example.com'
+  password: 'securePassword'

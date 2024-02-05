@@ -1,0 +1,145 @@
+---
+grails:
+    profile: web
+    codegen:
+        defaultPackage: clockr.api
+    gorm:
+        reactor:
+            # Whether to translate GORM events into Reactor events
+            # Disabled by default for performance reasons
+            events: false
+    cors:
+        enabled: true
+info:
+    app:
+        name: '@info.app.name@'
+        version: '@info.app.version@'
+        grailsVersion: '@info.app.grailsVersion@'
+spring:
+    flyway:
+        enabled: true
+        locations: classpath:db/migration
+        sql-migration-prefix: V
+        sql-migration-suffixes: .sql
+        baseline-version: 0.0.1
+        baseline-on-migrate: true
+        out-of-order: true
+    jmx:
+        unique-names: true
+    main:
+        banner-mode: "off"
+    groovy:
+        template:
+            check-template-location: false
+    devtools:
+        restart:
+            additional-exclude:
+                - '*.gsp'
+                - '**/*.gsp'
+                - '*.gson'
+                - '**/*.gson'
+                - 'logback.groovy'
+                - '*.properties'
+environments:
+    development:
+        management:
+            endpoints:
+                enabled-by-default: true
+                web:
+                    base-path: '/actuator'
+                    exposure:
+                        include: '*'
+    production:
+        management:
+            endpoints:
+                enabled-by-default: false
+
+---
+grails:
+    mime:
+        disable:
+            accept:
+                header:
+                    userAgents:
+                        - Gecko
+                        - WebKit
+                        - Presto
+                        - Trident
+        types:
+            all: '*/*'
+            atom: application/atom+xml
+            css: text/css
+            csv: text/csv
+            form: application/x-www-form-urlencoded
+            html:
+              - text/html
+              - application/xhtml+xml
+            js: text/javascript
+            json:
+              - application/json
+              - text/json
+            multipartForm: multipart/form-data
+            pdf: application/pdf
+            rss: application/rss+xml
+            text: text/plain
+            hal:
+              - application/hal+json
+              - application/hal+xml
+            xml:
+              - text/xml
+              - application/xml
+    urlmapping:
+        cache:
+            maxsize: 1000
+    controllers:
+        defaultScope: singleton
+    converters:
+        encoding: UTF-8
+    views:
+        default:
+            codec: html
+        gsp:
+            encoding: UTF-8
+            htmlcodec: xml
+            codecs:
+                expression: html
+                scriptlet: html
+                taglib: none
+                staticparts: none
+    databinding:
+        date-formats:
+            - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+            - 'yyyy-MM-dd HH:mm'
+            - 'yyyy-MM-dd HH:mm:ss'
+            - "'['yyyy-MM-dd HH:mm:ss']'"
+            - 'yyyy-MM-dd'
+            - "'['yyyy-MM-dd']'"
+            - 'HH:mm:ss'
+            - 'HH:mm'
+
+---
+hibernate:
+    cache:
+        queries: false
+        use_second_level_cache: false
+        use_query_cache: false
+dataSource:
+    pooled: true
+    jmxExport: true
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ''
+
+environments:
+    development:
+        grails:
+            config:
+                locations: classpath:development.yml
+    test:
+        grails:
+            config:
+                locations: classpath:test.yml
+    production:
+        grails:
+            config:
+                locations: classpath:production.yml
