@@ -1,6 +1,6 @@
 dataSource:
   dbCreate: none
-  url: "jdbc:mysql://{{ DB_HOST }}:{{ DB_PORT|default(3306) }}/dbname?zeroDateTimeBehavior=convertToNull&serverTimezone=UTC"
+  url: "jdbc:mysql://{{ DB_HOST }}:{{ DB_PORT|default(3306) }}/{{ DB_NAME }}?zeroDateTimeBehavior=convertToNull&serverTimezone=UTC"
   driverClassName: com.mysql.cj.jdbc.Driver
   dialect: org.hibernate.dialect.MySQL5InnoDBDialect
   username: "{{ DB_USER }}"
