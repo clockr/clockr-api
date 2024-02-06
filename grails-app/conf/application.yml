@@ -138,8 +138,11 @@ environments:
     test:
         grails:
             config:
-                locations: classpath:test.yml
+                # Found at docker/rootfs/default/application.yml
+                locations: file:/app/application.yml
     production:
         grails:
             config:
-                locations: classpath:production.yml
+                # Found at docker/rootfs/default/application.yml
+                locations: file:/app/application.yml
+
