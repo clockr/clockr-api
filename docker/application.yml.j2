@@ -32,6 +32,21 @@ grails:
               secret: '{{ GRAILS_JWT_SECRET }}'
             password:
               algorithm: 'bcrypt'
+  mail:
+    host: '{{ GRAILS_MAIL_HOST}}'
+    port: {{ GRAILS_MAIL_PORT}}
+    username: '{{ GRAILS_MAIL_USERNAME }}'
+    password: '{{ GRAILS_MAIL_PASSWORD }}'
+    from: '{{ GRAILS_MAIL_FROM }}'
+    props:
+      mail.smtp.auth: '{{ GRAILS_MAIL_SMTP_AUTH }}'
+      mail.smtp.socketFactory.port: '{{ GRAILS_MAIL_SMTP_SOCKET_FACTORY_PORT }}'
+      mail.smtp.socketFactory.class: "javax.net.ssl.SSLSocketFactory"
+      mail.smtp.socketFactory.fallback: "true"
 initialAdminUser:
   email: '{{ INIT_ADMIN_EMAIL|default('admin@example.org') }}'
   password: '{{ INIT_ADMIN_PASSWORD|default('admin')}}'
+appName: '{{ GRAILS_APP_NAME }}'
+emailFooter: '{{ GRAILS_EMAIL_FOOTER }}'
+resetPasswordByUserLink: '{{ GRAILS_APP_BASE_URL }}/resetPassword/'
+setPasswordNewUserLink: '{{ GRAILS_APP_BASE_URL }}/register/'
