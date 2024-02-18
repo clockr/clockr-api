@@ -1,5 +1,6 @@
 package clockr.api
 
+import clockr.api.commands.UserSetPasswordCommand
 import grails.plugin.springsecurity.annotation.Secured
 
 @Secured("ROLE_USER")
@@ -21,5 +22,15 @@ class UserController extends RestController {
                 overview: userService.getYearOverview(params.int('id'), params.int('year'))
         ]
         renderJson(result)
+    }
+
+    @Secured('permitAll')
+    def forgotPassword() {
+        renderJson(userService.requestResetPasswordToken(params.username as String))
+    }
+
+    @Secured('permitAll')
+    def setPassword(UserSetPasswordCommand cmd) {
+        renderJson(cmd, { userService.setPassword(cmd) })
     }
 }

@@ -29,6 +29,9 @@ class UrlMappings {
 
             get "/$id/month/$year/$month" (controller: 'user', action: 'getMonth')
             get "/$id/year/$year" (controller: 'user', action: 'getYear')
+
+            post "/forgot-password/$username" (controller: 'user', action: 'forgotPassword')
+            post "/set-password" (controller: 'user', action: 'setPassword')
         }
 
 
