@@ -7,6 +7,10 @@ import grails.gorm.transactions.Transactional
 @Transactional
 class UserManagementService {
 
+    def tokenService
+    def notificationService
+    def grailsApplication
+
     def listUsers() {
         return User.all.collect { getUserModelShort(it.id) }
     }
@@ -17,11 +21,17 @@ class UserManagementService {
 
     def saveUser(UserCommand cmd) {
         User user = cmd.user
+        Boolean isNewUser = !user.id
         user.setProperties(cmd)
         if (!user.password) {
             user.password = UUID.randomUUID()
         }
         user.save()
+        if (isNewUser) {
+            Token token = tokenService.createToken(Token.TokenType.USER_SET_PASSWORD, user)
+            def model = [tokenLink: "${grailsApplication.config.getProperty('setPasswordNewUserLink')}${token.identifier}"]
+            notificationService.sendMailByView(user, "Für dich wurde ein Account erstellt", "/email/setPasswordNewUser", model)
+        }
         return getUser(user.id)
     }
 

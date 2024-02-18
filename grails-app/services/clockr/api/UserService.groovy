@@ -1,5 +1,6 @@
 package clockr.api
 
+import clockr.api.commands.UserSetPasswordCommand
 import grails.gorm.transactions.Transactional
 
 import java.time.LocalDate
@@ -13,6 +14,9 @@ class UserService {
     def userDayItemService
     def userManualEntryService
     def manualEntryService
+    def tokenService
+    def notificationService
+    def grailsApplication
 
     def getMonthDays(Long userId, Integer year, Integer month) {
         Contract contract = userContractService.getContractForMonth(userId, year, month)
@@ -108,5 +112,25 @@ class UserService {
                 vacationOffset    : vacationOffset,
                 workingHoursOffset: workingHoursOffset
         ]
+    }
+
+    def requestResetPasswordToken(String username) {
+        username = username.replaceAll("%", "")
+        User user = User.findByUsernameIlike(username)
+        if (user) {
+            Token token = tokenService.createToken(Token.TokenType.USER_SET_PASSWORD, user)
+            def model = [tokenLink: "${grailsApplication.config.getProperty('resetPasswordByUserLink')}${token.identifier}"]
+            notificationService.sendMailByView(user, "Dein Zugang", "/email/resetPasswordByUser", model)
+        } else {
+            log.warn "user for username $username not found"
+        }
+        return true
+    }
+
+    def setPassword(UserSetPasswordCommand cmd) {
+        User user = cmd.token?.user
+        user.password = cmd.password
+        user.save()
+        return true
     }
 }
