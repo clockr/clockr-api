@@ -29,6 +29,13 @@ class TokenService {
         return !token.hasErrors() ? token : null
     }
 
+    Token invalidateToken(Long tokenId) {
+        Token token = Token.get(tokenId)
+        token.validUntil = new Date()
+        token.save()
+        return token
+    }
+
     String generateTokenIdentifier() {
         return UUID.randomUUID()
     }
