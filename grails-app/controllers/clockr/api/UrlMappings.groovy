@@ -3,6 +3,8 @@ package clockr.api
 class UrlMappings {
 
     static mappings = {
+        post "/oauth/access_token"(controller: 'restOauth', action: 'accessToken')
+
         group "/user-management", {
             get "/" (controller: 'userManagement', action: 'list')
             get "/$id" (controller: 'userManagement', action: 'read')
