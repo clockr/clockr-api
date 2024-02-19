@@ -105,14 +105,14 @@ class UserService {
         if (firstContractedYear) {
             for (Integer i = firstContractedYear; i < year; i++) {
                 def months = getYearMonths(userId, i)
-                vacationOffset += userContractService.getVacationForYear(userId, i) - (months?.sum { it.vacationCount } as Integer) + (userManualEntryService.getManualEntriesByTypeForYear(userId, ManualEntry.ManualEntryType.VACATION, i)?.sum { it.amount } ?: 0) as Integer
-                workingHoursOffset += months?.sum { it.difference } as Float + (userManualEntryService.getManualEntriesByTypeForYear(userId, ManualEntry.ManualEntryType.WORKING_TIME, i)?.sum { it.amount } ?: 0) as Float
+                vacationOffset += userContractService.getVacationForYear(userId, i) - (months?.sum { it.vacationCount } as Integer)
+                workingHoursOffset += months?.sum { it.difference } as Float
             }
         }
 
         return [
-                vacationOffset    : vacationOffset,
-                workingHoursOffset: workingHoursOffset
+                vacationOffset    : vacationOffset + (userManualEntryService.getManualEntriesByTypeBeforeYear(userId, ManualEntry.ManualEntryType.VACATION, year)?.sum { it.amount } ?: 0) as Integer,
+                workingHoursOffset: workingHoursOffset + (userManualEntryService.getManualEntriesByTypeBeforeYear(userId, ManualEntry.ManualEntryType.WORKING_TIME, year)?.sum { it.amount } ?: 0) as Float
         ]
     }
 
