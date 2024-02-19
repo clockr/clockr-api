@@ -31,6 +31,7 @@ class UserManagementService {
             Token token = tokenService.createToken(Token.TokenType.USER_SET_PASSWORD, user)
             def model = [tokenLink: "${grailsApplication.config.getProperty('setPasswordNewUserLink')}${token.identifier}"]
             notificationService.sendMailByView(user, "Für dich wurde ein Account erstellt", "/email/setPasswordNewUser", model)
+            UserRole.create(user, Role.findByAuthority('ROLE_USER'), true)
         }
         return getUser(user.id)
     }
