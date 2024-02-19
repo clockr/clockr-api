@@ -43,6 +43,7 @@ grails:
       mail.smtp.socketFactory.port: '{{ GRAILS_MAIL_SMTP_SOCKET_FACTORY_PORT }}'
       mail.smtp.socketFactory.class: "javax.net.ssl.SSLSocketFactory"
       mail.smtp.socketFactory.fallback: "true"
+      mail.smtp.starttls.enable: {{ GRAILS_SMTP_STARTTLS|default('false') }}
 initialAdminUser:
   email: '{{ INIT_ADMIN_EMAIL|default('admin@example.org') }}'
   password: '{{ INIT_ADMIN_PASSWORD|default('admin')}}'
