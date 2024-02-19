@@ -5,7 +5,7 @@ grails.plugin.springsecurity.userLookup.userDomainClassName = 'clockr.api.User'
 grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'clockr.api.UserRole'
 grails.plugin.springsecurity.authority.className = 'clockr.api.Role'
 
-grails.plugin.springsecurity.rest.login.endpointUrl = '/api/login'
+grails.plugin.springsecurity.rest.login.endpointUrl = '/login'
 grails.plugin.springsecurity.rest.key.validation.enableAnonymousAccess = true
 
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
@@ -27,6 +27,10 @@ grails.plugin.springsecurity.filterChain.chainMap = [
 		[pattern: '/**/css/**',      filters: 'none'],
 		[pattern: '/**/images/**',   filters: 'none'],
 		[pattern: '/**/favicon.ico', filters: 'none'],
+		[
+				pattern: '/oauth/access_token',
+				filters: 'none'
+		],
 		[
 				pattern: '/**',
 				filters: 'JOINED_FILTERS,-exceptionTranslationFilter,-authenticationProcessingFilter,-securityContextPersistenceFilter,-rememberMeAuthenticationFilter'
