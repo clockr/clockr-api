@@ -60,23 +60,25 @@ class UserManagementService {
     private static getUserModelShort(Long id) {
         User user = User.get(id)
         return [
-                id       : user.id,
-                username : user.username,
-                firstname: user.firstname,
-                lastname : user.lastname,
-                enabled  : user.enabled
+                id         : user.id,
+                username   : user.username,
+                firstname  : user.firstname,
+                lastname   : user.lastname,
+                germanState: user.germanState?.name(),
+                enabled    : user.enabled
         ]
     }
 
     private static getUserModel(Long id) {
         User user = User.get(id)
         return [
-                id       : user.id,
-                username : user.username,
-                firstname: user.firstname,
-                lastname : user.lastname,
-                enabled  : user.enabled,
-                contracts: user.contracts?.collect { getContractModel(it.id) }
+                id         : user.id,
+                username   : user.username,
+                firstname  : user.firstname,
+                lastname   : user.lastname,
+                germanState: user.germanState?.name(),
+                enabled    : user.enabled,
+                contracts  : user.contracts?.collect { getContractModel(it.id) }
         ]
     }
 

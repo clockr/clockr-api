@@ -9,6 +9,25 @@ import grails.compiler.GrailsCompileStatic
 @ToString(includes='username', includeNames=true, includePackage=false)
 class User implements Serializable {
 
+    static enum UserGermanState {
+        BE,
+        BB,
+        BW,
+        BY,
+        HE,
+        MV,
+        NW,
+        RP,
+        SL,
+        SN,
+        ST,
+        TH,
+        SH,
+        HH,
+        HB,
+        NI
+    }
+
     private static final long serialVersionUID = 1
 
     String username
@@ -21,6 +40,8 @@ class User implements Serializable {
     String firstname
     String lastname
 
+    UserGermanState germanState
+
     Set<Role> getAuthorities() {
         (UserRole.findAllByUser(this) as List<UserRole>)*.role as Set<Role>
     }
@@ -32,6 +53,7 @@ class User implements Serializable {
         username nullable: false, blank: false, unique: true, email: true
         firstname nullable: true
         lastname nullable: true
+        germanState nullable: true
     }
 
     static mapping = {

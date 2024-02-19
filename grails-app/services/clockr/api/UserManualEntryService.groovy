@@ -32,4 +32,15 @@ class UserManualEntryService {
             return date >= targetStart && date < targetEnd
         }
     }
+
+    ManualEntry[] getManualEntriesByTypeBeforeYear(Long userId, ManualEntryType type, Integer year) {
+        ManualEntry[] manualEntries = ManualEntry.findAllByUserAndType(User.get(userId), type)
+        LocalDate targetStart = LocalDate.of(year, 1, 1)
+
+        return manualEntries?.findAll { manualEntry ->
+            LocalDate date = manualEntry.date.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate()
+
+            return date < targetStart
+        }
+    }
 }

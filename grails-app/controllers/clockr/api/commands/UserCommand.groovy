@@ -12,6 +12,8 @@ class UserCommand implements Validateable {
     String lastname
     Boolean enabled
 
+    User.UserGermanState germanState
+
     static constraints = {
         user nullable: false
         username nullable: false, email: true, validator: { val, obj ->

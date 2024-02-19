@@ -19,9 +19,10 @@ class UserService {
     def grailsApplication
 
     def getMonthDays(Long userId, Integer year, Integer month) {
+        User user = User.get(userId)
         Contract contract = userContractService.getContractForMonth(userId, year, month)
         if (contract) {
-            WorkingDayCalculator.getDays(year, month, contract.workingDays)?.collect { day ->
+            WorkingDayCalculator.getDays(year, month, contract.workingDays, user?.germanState?.name()?.toLowerCase())?.collect { day ->
                 day.workingTimes = userWorkingTimeService.getWorkingTimesForDay(userId, day.date as LocalDate)
                 day.isHours = userWorkingTimeService.getWorkingTimeForDayInHours(userId, day.date as LocalDate) ?: 0
                 day.breakfastItem = userDayItemService.getDayItemByTypeForDay(userId, DayItem.DayItemType.BREAKFAST, day.date as LocalDate)
@@ -35,9 +36,10 @@ class UserService {
     }
 
     def getMonthResult(Long userId, Integer year, Integer month) {
+        User user = User.get(userId)
         Contract contract = userContractService.getContractForMonth(userId, year, month)
         if (contract) {
-            Integer workingDaysAmount = WorkingDayCalculator.countWorkingDays(year, month, contract.workingDays)
+            Integer workingDaysAmount = WorkingDayCalculator.countWorkingDays(year, month, contract.workingDays, user?.germanState?.name()?.toLowerCase())
             Float targetHours = workingDaysAmount * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
             Float isHours = userWorkingTimeService.getWorkingTimeForMonth(userId, year, month) ?: 0
             Integer breakfastCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.BREAKFAST, year, month)
@@ -103,14 +105,14 @@ class UserService {
         if (firstContractedYear) {
             for (Integer i = firstContractedYear; i < year; i++) {
                 def months = getYearMonths(userId, i)
-                vacationOffset += userContractService.getVacationForYear(userId, i) - (months?.sum { it.vacationCount } as Integer) + (userManualEntryService.getManualEntriesByTypeForYear(userId, ManualEntry.ManualEntryType.VACATION, i)?.sum { it.amount } ?: 0) as Integer
-                workingHoursOffset += months?.sum { it.difference } as Float + (userManualEntryService.getManualEntriesByTypeForYear(userId, ManualEntry.ManualEntryType.WORKING_TIME, i)?.sum { it.amount } ?: 0) as Float
+                vacationOffset += userContractService.getVacationForYear(userId, i) - (months?.sum { it.vacationCount } as Integer)
+                workingHoursOffset += months?.sum { it.difference } as Float
             }
         }
 
         return [
-                vacationOffset    : vacationOffset,
-                workingHoursOffset: workingHoursOffset
+                vacationOffset    : vacationOffset + (userManualEntryService.getManualEntriesByTypeBeforeYear(userId, ManualEntry.ManualEntryType.VACATION, year)?.sum { it.amount } ?: 0) as Integer,
+                workingHoursOffset: workingHoursOffset + (userManualEntryService.getManualEntriesByTypeBeforeYear(userId, ManualEntry.ManualEntryType.WORKING_TIME, year)?.sum { it.amount } ?: 0) as Float
         ]
     }
 
