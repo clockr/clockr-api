@@ -129,11 +129,13 @@ class UserService {
 
     def setPassword(UserSetPasswordCommand cmd) {
         tokenService.invalidateToken(cmd.token?.id)
-        User user = cmd.token?.user?.refresh()
-        user.password = cmd.password
-        user.save()
-        if (user.hasErrors()) {
-            log.warn "error while setting password for user ${user.id}"
+        User.withNewTransaction {
+            User user = User.get(cmd.token?.userId)
+            user.password = cmd.password
+            user.save()
+            if (user.hasErrors()) {
+                log.warn "error while setting password for user ${user.id}"
+            }
         }
         return true
     }
