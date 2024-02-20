@@ -20,9 +20,12 @@ class UserService {
 
     def getMonthDays(Long userId, Integer year, Integer month) {
         User user = User.get(userId)
-        Contract contract = userContractService.getContractForMonth(userId, year, month)
-        if (contract) {
-            WorkingDayCalculator.getDays(year, month, contract.workingDays, user?.germanState?.name()?.toLowerCase())?.collect { day ->
+        Contract[] contracts = userContractService.getContractsForMonth(userId, year, month)
+        if (contracts) {
+            def workingDays = contracts?.collect { contract ->
+                WorkingDayCalculator.getDays(year, month, contract.startAt, contract.endAt, contract.workingDays, user?.germanState?.name()?.toLowerCase())
+            }?.flatten()?.sort{ it.date }
+            workingDays?.collect { day ->
                 day.workingTimes = userWorkingTimeService.getWorkingTimesForDay(userId, day.date as LocalDate)
                 day.isHours = userWorkingTimeService.getWorkingTimeForDayInHours(userId, day.date as LocalDate) ?: 0
                 day.breakfastItem = userDayItemService.getDayItemByTypeForDay(userId, DayItem.DayItemType.BREAKFAST, day.date as LocalDate)
@@ -37,19 +40,25 @@ class UserService {
 
     def getMonthResult(Long userId, Integer year, Integer month) {
         User user = User.get(userId)
-        Contract contract = userContractService.getContractForMonth(userId, year, month)
-        if (contract) {
-            Integer workingDaysAmount = WorkingDayCalculator.countWorkingDays(year, month, contract.workingDays, user?.germanState?.name()?.toLowerCase())
-            Float targetHours = workingDaysAmount * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
+        Contract[] contracts = userContractService.getContractsForMonth(userId, year, month)
+        if (contracts) {
+            Float targetHours = contracts.sum { contract ->
+                Integer workingDaysAmount = WorkingDayCalculator.countWorkingDays(year, month, contract.startAt, contract.endAt, contract.workingDays, user?.germanState?.name()?.toLowerCase())
+                return workingDaysAmount * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
+            }
             Float isHours = userWorkingTimeService.getWorkingTimeForMonth(userId, year, month) ?: 0
             Integer breakfastCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.BREAKFAST, year, month)
             Integer lunchCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.LUNCH, year, month)
             Integer illnessCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.ILLNESS, year, month)
             Integer vacationCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.VACATION, year, month)
-            Float difference = isHours - targetHours + (illnessCount + vacationCount) * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
+            Float difference = isHours - targetHours + contracts.sum {contract ->
+                Integer contractIllnessCount = userDayItemService.countDayItemsByTypeForMonthAndContract(userId, contract.id, DayItem.DayItemType.ILLNESS, year, month)
+                Integer contractVacationCount = userDayItemService.countDayItemsByTypeForMonthAndContract(userId, contract.id, DayItem.DayItemType.VACATION, year, month)
+                return (contractIllnessCount + contractVacationCount) * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
+            }
             return [
-                    hoursPerWeek  : contract.hoursPerWeek,
-                    daysPerWeek   : userContractService.getDaysPerWeek(contract.id),
+                    hoursPerWeek  : contracts?.sort { it.startAt }?.collect { contract -> contract.hoursPerWeek },
+                    daysPerWeek   : contracts?.sort { it.startAt }?.collect { contract -> userContractService.getDaysPerWeek(contract.id) },
                     targetHours   : targetHours,
                     isHours       : isHours,
                     breakfastCount: breakfastCount,
@@ -60,8 +69,8 @@ class UserService {
             ]
         } else {
             return [
-                    hoursPerWeek  : 0,
-                    daysPerWeek   : 0,
+                    hoursPerWeek  : [0],
+                    daysPerWeek   : [0],
                     targetHours   : 0,
                     isHours       : 0,
                     breakfastCount: 0,
