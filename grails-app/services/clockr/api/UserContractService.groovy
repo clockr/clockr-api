@@ -9,12 +9,12 @@ import java.time.temporal.ChronoUnit
 @Transactional
 class UserContractService {
 
-    Contract getContractForMonth(Long userId, Integer year, Integer month) {
+    Contract[] getContractsForMonth(Long userId, Integer year, Integer month) {
         Contract[] contracts = User.get(userId)?.contracts
         LocalDate targetStart = LocalDate.of(year, month, 1)
         LocalDate targetEnd = targetStart.plusMonths(1).minusDays(1)
 
-        return contracts?.find { contract ->
+        return contracts?.findAll { contract ->
             LocalDate startAt = contract.startAt.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate()
             LocalDate endAt = (contract.endAt ?: new Date()).toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate()
 

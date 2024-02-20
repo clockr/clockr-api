@@ -4,12 +4,23 @@ import de.jollyday.Holiday
 import de.jollyday.HolidayCalendar
 import de.jollyday.HolidayManager
 import java.time.LocalDate
+import java.time.ZoneId
 
 class WorkingDayCalculator {
 
-    static def getDays(Integer year, Integer month, String workingDaysPattern, String stateCode = "mv") {
+    static def getDays(Integer year, Integer month, Date contractStartAt, Date contractEndAt, String workingDaysPattern, String stateCode = "mv") {
+        LocalDate localContractStartAt = contractStartAt.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate()
+        LocalDate localContractEndAt = contractEndAt ? contractEndAt.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate() : null
+
         LocalDate date = LocalDate.of(year, month, 1)
+        if (localContractStartAt.isAfter(date)) {
+            date = LocalDate.of(year, month, localContractStartAt.getDayOfMonth())
+        }
+
         LocalDate endOfMonth = date.withDayOfMonth(date.lengthOfMonth())
+        if (localContractEndAt && localContractEndAt.isBefore(endOfMonth)) {
+            endOfMonth = LocalDate.of(year, month, localContractEndAt.getDayOfMonth())
+        }
 
         HolidayManager manager = HolidayManager.getInstance(HolidayCalendar.GERMANY)
 
@@ -27,9 +38,19 @@ class WorkingDayCalculator {
         return days
     }
 
-    static int countWorkingDays(Integer year, Integer month, String workingDaysPattern, String stateCode = "mv") {
+    static int countWorkingDays(Integer year, Integer month, Date contractStartAt, Date contractEndAt, String workingDaysPattern, String stateCode = "mv") {
+        LocalDate localContractStartAt = contractStartAt.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate()
+        LocalDate localContractEndAt = contractEndAt ? contractEndAt.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate() : null
+
         LocalDate date = LocalDate.of(year, month, 1)
+        if (localContractStartAt.isAfter(date)) {
+            date = LocalDate.of(year, month, localContractStartAt.getDayOfMonth())
+        }
+
         LocalDate endOfMonth = date.withDayOfMonth(date.lengthOfMonth())
+        if (localContractEndAt && localContractEndAt.isBefore(endOfMonth)) {
+            endOfMonth = LocalDate.of(year, month, localContractEndAt.getDayOfMonth())
+        }
 
         HolidayManager manager = HolidayManager.getInstance(HolidayCalendar.GERMANY)
 
