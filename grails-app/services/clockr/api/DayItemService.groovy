@@ -6,17 +6,23 @@ import grails.gorm.transactions.Transactional
 @Transactional
 class DayItemService {
 
+    def userAccessService
+
     def saveDayItem(DayItemCommand cmd) {
-        DayItem dayItem = cmd.dayItem
-        dayItem.setProperties(cmd)
-        dayItem.save()
-        return getDayItem(dayItem.id)
+        if (userAccessService.hasUserAccess(cmd.user?.id)) {
+            DayItem dayItem = cmd.dayItem
+            dayItem.setProperties(cmd)
+            dayItem.save()
+            return getDayItem(dayItem.id)
+        }
     }
 
     def deleteDayItem(Long id) {
         DayItem dayItem = DayItem.get(id)
-        dayItem.delete()
-        return true
+        if (userAccessService.hasUserAccess(dayItem?.userId)) {
+            dayItem.delete()
+            return true
+        }
     }
 
     private static getDayItem(Long id) {

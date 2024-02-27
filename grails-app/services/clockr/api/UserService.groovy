@@ -17,93 +17,102 @@ class UserService {
     def tokenService
     def notificationService
     def grailsApplication
+    def userAccessService
 
     def getMonthDays(Long userId, Integer year, Integer month) {
-        User user = User.get(userId)
-        Contract[] contracts = userContractService.getContractsForMonth(userId, year, month)
-        if (contracts) {
-            def workingDays = contracts?.collect { contract ->
-                WorkingDayCalculator.getDays(year, month, contract.startAt, contract.endAt, contract.workingDays, user?.germanState?.name()?.toLowerCase())
-            }?.flatten()?.sort{ it.date }
-            workingDays?.collect { day ->
-                day.workingTimes = userWorkingTimeService.getWorkingTimesForDay(userId, day.date as LocalDate)
-                day.isHours = userWorkingTimeService.getWorkingTimeForDayInHours(userId, day.date as LocalDate) ?: 0
-                day.breakfastItem = userDayItemService.getDayItemByTypeForDay(userId, DayItem.DayItemType.BREAKFAST, day.date as LocalDate)
-                day.lunchItem = userDayItemService.getDayItemByTypeForDay(userId, DayItem.DayItemType.LUNCH, day.date as LocalDate)
-                day.illnessItem = userDayItemService.getDayItemByTypeForDay(userId, DayItem.DayItemType.ILLNESS, day.date as LocalDate)
-                day.vacationItem = userDayItemService.getDayItemByTypeForDay(userId, DayItem.DayItemType.VACATION, day.date as LocalDate)
-                day.date = Date.from(day.date?.atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant())
-                day
+        if (userAccessService.hasUserAccess(userId)) {
+            User user = User.get(userId)
+            Contract[] contracts = userContractService.getContractsForMonth(userId, year, month)
+            if (contracts) {
+                def workingDays = contracts?.collect { contract ->
+                    WorkingDayCalculator.getDays(year, month, contract.startAt, contract.endAt, contract.workingDays, user?.germanState?.name()?.toLowerCase())
+                }?.flatten()?.sort{ it.date }
+                workingDays?.collect { day ->
+                    day.workingTimes = userWorkingTimeService.getWorkingTimesForDay(userId, day.date as LocalDate)
+                    day.isHours = userWorkingTimeService.getWorkingTimeForDayInHours(userId, day.date as LocalDate) ?: 0
+                    day.breakfastItem = userDayItemService.getDayItemByTypeForDay(userId, DayItem.DayItemType.BREAKFAST, day.date as LocalDate)
+                    day.lunchItem = userDayItemService.getDayItemByTypeForDay(userId, DayItem.DayItemType.LUNCH, day.date as LocalDate)
+                    day.illnessItem = userDayItemService.getDayItemByTypeForDay(userId, DayItem.DayItemType.ILLNESS, day.date as LocalDate)
+                    day.vacationItem = userDayItemService.getDayItemByTypeForDay(userId, DayItem.DayItemType.VACATION, day.date as LocalDate)
+                    day.date = Date.from(day.date?.atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant())
+                    day
+                }
             }
         }
     }
 
     def getMonthResult(Long userId, Integer year, Integer month) {
-        User user = User.get(userId)
-        Contract[] contracts = userContractService.getContractsForMonth(userId, year, month)
-        if (contracts) {
-            Float targetHours = contracts.sum { contract ->
-                Integer workingDaysAmount = WorkingDayCalculator.countWorkingDays(year, month, contract.startAt, contract.endAt, contract.workingDays, user?.germanState?.name()?.toLowerCase())
-                return workingDaysAmount * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
+        if (userAccessService.hasUserAccess(userId)) {
+            User user = User.get(userId)
+            Contract[] contracts = userContractService.getContractsForMonth(userId, year, month)
+            if (contracts) {
+                Float targetHours = contracts.sum { contract ->
+                    Integer workingDaysAmount = WorkingDayCalculator.countWorkingDays(year, month, contract.startAt, contract.endAt, contract.workingDays, user?.germanState?.name()?.toLowerCase())
+                    return workingDaysAmount * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
+                }
+                Float isHours = userWorkingTimeService.getWorkingTimeForMonth(userId, year, month) ?: 0
+                Integer breakfastCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.BREAKFAST, year, month)
+                Integer lunchCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.LUNCH, year, month)
+                Integer illnessCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.ILLNESS, year, month)
+                Integer vacationCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.VACATION, year, month)
+                Float difference = isHours - targetHours + contracts.sum {contract ->
+                    Integer contractIllnessCount = userDayItemService.countDayItemsByTypeForMonthAndContract(userId, contract.id, DayItem.DayItemType.ILLNESS, year, month)
+                    Integer contractVacationCount = userDayItemService.countDayItemsByTypeForMonthAndContract(userId, contract.id, DayItem.DayItemType.VACATION, year, month)
+                    return (contractIllnessCount + contractVacationCount) * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
+                }
+                return [
+                        hoursPerWeek  : contracts?.sort { it.startAt }?.collect { contract -> contract.hoursPerWeek },
+                        daysPerWeek   : contracts?.sort { it.startAt }?.collect { contract -> userContractService.getDaysPerWeek(contract.id) },
+                        targetHours   : targetHours,
+                        isHours       : isHours,
+                        breakfastCount: breakfastCount,
+                        lunchCount    : lunchCount,
+                        illnessCount  : illnessCount,
+                        vacationCount : vacationCount,
+                        difference    : difference
+                ]
+            } else {
+                return [
+                        hoursPerWeek  : [0],
+                        daysPerWeek   : [0],
+                        targetHours   : 0,
+                        isHours       : 0,
+                        breakfastCount: 0,
+                        lunchCount    : 0,
+                        illnessCount  : 0,
+                        vacationCount : 0,
+                        difference    : 0
+                ]
             }
-            Float isHours = userWorkingTimeService.getWorkingTimeForMonth(userId, year, month) ?: 0
-            Integer breakfastCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.BREAKFAST, year, month)
-            Integer lunchCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.LUNCH, year, month)
-            Integer illnessCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.ILLNESS, year, month)
-            Integer vacationCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.VACATION, year, month)
-            Float difference = isHours - targetHours + contracts.sum {contract ->
-                Integer contractIllnessCount = userDayItemService.countDayItemsByTypeForMonthAndContract(userId, contract.id, DayItem.DayItemType.ILLNESS, year, month)
-                Integer contractVacationCount = userDayItemService.countDayItemsByTypeForMonthAndContract(userId, contract.id, DayItem.DayItemType.VACATION, year, month)
-                return (contractIllnessCount + contractVacationCount) * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
-            }
-            return [
-                    hoursPerWeek  : contracts?.sort { it.startAt }?.collect { contract -> contract.hoursPerWeek },
-                    daysPerWeek   : contracts?.sort { it.startAt }?.collect { contract -> userContractService.getDaysPerWeek(contract.id) },
-                    targetHours   : targetHours,
-                    isHours       : isHours,
-                    breakfastCount: breakfastCount,
-                    lunchCount    : lunchCount,
-                    illnessCount  : illnessCount,
-                    vacationCount : vacationCount,
-                    difference    : difference
-            ]
-        } else {
-            return [
-                    hoursPerWeek  : [0],
-                    daysPerWeek   : [0],
-                    targetHours   : 0,
-                    isHours       : 0,
-                    breakfastCount: 0,
-                    lunchCount    : 0,
-                    illnessCount  : 0,
-                    vacationCount : 0,
-                    difference    : 0
-            ]
         }
     }
 
     def getYearMonths(Long userId, Integer year) {
-        Float workingHoursOffset = getYearsBeforeOffsets(userId, year)?.workingHoursOffset
-        (1..12)?.collect {
-            def month = getMonthResult(userId, year, it)
-            workingHoursOffset += month?.difference ?: 0
-            month.month = it
-            month.totalDifference = workingHoursOffset
-            month
+        if (userAccessService.hasUserAccess(userId)) {
+            Float workingHoursOffset = getYearsBeforeOffsets(userId, year)?.workingHoursOffset
+            (1..12)?.collect {
+                def month = getMonthResult(userId, year, it)
+                workingHoursOffset += month?.difference ?: 0
+                month.month = it
+                month.totalDifference = workingHoursOffset
+                month
+            }
         }
     }
 
     def getYearOverview(Long userId, Integer year) {
-        def offsets = getYearsBeforeOffsets(userId, year)
-        Integer vacationDays = userContractService.getVacationForYear(userId, year) ?: 0
-        Integer usedVacationDays = userDayItemService.countDayItemsByTypeForYear(userId, DayItem.DayItemType.VACATION, year) ?: 0
-        return [
-                vacationDays         : vacationDays,
-                vacationOffset       : offsets.vacationOffset,
-                workingHoursOffset   : offsets.workingHoursOffset,
-                vacationDaysRemaining: vacationDays + offsets.vacationOffset - usedVacationDays,
-                manualEntries        : userManualEntryService.getManualEntriesForYear(userId, year)?.collect { manualEntry -> manualEntryService.getManualEntry(manualEntry.id) }
-        ]
+        if (userAccessService.hasUserAccess(userId)) {
+            def offsets = getYearsBeforeOffsets(userId, year)
+            Integer vacationDays = userContractService.getVacationForYear(userId, year) ?: 0
+            Integer usedVacationDays = userDayItemService.countDayItemsByTypeForYear(userId, DayItem.DayItemType.VACATION, year) ?: 0
+            return [
+                    vacationDays         : vacationDays,
+                    vacationOffset       : offsets.vacationOffset,
+                    workingHoursOffset   : offsets.workingHoursOffset,
+                    vacationDaysRemaining: vacationDays + offsets.vacationOffset - usedVacationDays,
+                    manualEntries        : userManualEntryService.getManualEntriesForYear(userId, year)?.collect { manualEntry -> manualEntryService.getManualEntry(manualEntry.id) }
+            ]
+        }
     }
 
     private def getYearsBeforeOffsets(Long userId, Integer year) {
