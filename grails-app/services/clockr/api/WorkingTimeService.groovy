@@ -6,17 +6,23 @@ import grails.gorm.transactions.Transactional
 @Transactional
 class WorkingTimeService {
 
+    def userAccessService
+
     def saveWorkingTime(WorkingTimeCommand cmd) {
-        WorkingTime workingTime = cmd.workingTime
-        workingTime.setProperties(cmd)
-        workingTime.save()
-        return getWorkingTime(workingTime.id)
+        if (userAccessService.hasUserAccess(cmd.user?.id)) {
+            WorkingTime workingTime = cmd.workingTime
+            workingTime.setProperties(cmd)
+            workingTime.save()
+            return getWorkingTime(workingTime.id)
+        }
     }
 
     def deleteWorkingTime(Long id) {
         WorkingTime workingTime = WorkingTime.get(id)
-        workingTime.delete()
-        return true
+        if (userAccessService.hasUserAccess(workingTime?.userId)) {
+            workingTime.delete()
+            return true
+        }
     }
 
     private static getWorkingTime(Long id) {
