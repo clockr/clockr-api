@@ -12,11 +12,10 @@ class UserDayItemService {
     Integer countDayItemsByTypeForMonth(Long userId, DayItemType type, Integer year, Integer month) {
         DayItem[] dayItems = DayItem.findAllByUserAndType(User.get(userId), type)
         LocalDate targetStart = LocalDate.of(year, month, 1)
-        LocalDate targetEnd = targetStart.withDayOfMonth(targetStart.lengthOfMonth())
+        LocalDate targetEnd = targetStart.withDayOfMonth(targetStart.lengthOfMonth()).plusDays(1)
 
         return dayItems?.findAll { dayItem ->
             LocalDate date = dayItem.day.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate()
-
             return date >= targetStart && date < targetEnd
         }?.size()
     }
@@ -33,14 +32,13 @@ class UserDayItemService {
             targetStart = LocalDate.of(year, month, localContractStartAt.getDayOfMonth())
         }
 
-        LocalDate targetEnd = targetStart.withDayOfMonth(targetStart.lengthOfMonth())
+        LocalDate targetEnd = targetStart.withDayOfMonth(targetStart.lengthOfMonth()).plusDays(1)
         if (localContractEndAt && localContractEndAt.isBefore(targetEnd)) {
-            targetEnd = LocalDate.of(year, month, localContractEndAt.getDayOfMonth())
+            targetEnd = LocalDate.of(year, month, localContractEndAt.getDayOfMonth()).plusDays(1)
         }
 
         return dayItems?.findAll { dayItem ->
             LocalDate date = dayItem.day.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate()
-
             return date >= targetStart && date < targetEnd
         }?.size()
     }
@@ -52,7 +50,6 @@ class UserDayItemService {
 
         return dayItems?.findAll { dayItem ->
             LocalDate date = dayItem.day.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate()
-
             return date >= targetStart && date < targetEnd
         }?.size()
     }
