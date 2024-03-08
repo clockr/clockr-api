@@ -3,6 +3,8 @@ package clockr.api
 import de.jollyday.Holiday
 import de.jollyday.HolidayCalendar
 import de.jollyday.HolidayManager
+import de.jollyday.HolidayType
+
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -25,6 +27,10 @@ class WorkingDayCalculator {
         HolidayManager manager = HolidayManager.getInstance(HolidayCalendar.GERMANY)
 
         Set<Holiday> holidays = manager.getHolidays(year, stateCode)
+
+        if (year >= 2023 && stateCode?.toLowerCase() == 'mv') {
+            holidays.add(new Holiday(LocalDate.of(year, 3, 8), 'INTERNATIONAL_WOMAN', HolidayType.OFFICIAL_HOLIDAY))
+        }
 
         def days = []
         while (date.isBefore(endOfMonth) || date.isEqual(endOfMonth)) {
