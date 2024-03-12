@@ -62,6 +62,10 @@ class WorkingDayCalculator {
 
         Set<Holiday> holidays = manager.getHolidays(year, stateCode)
 
+        if (year >= 2023 && stateCode?.toLowerCase() == 'mv') {
+            holidays.add(new Holiday(LocalDate.of(year, 3, 8), 'INTERNATIONAL_WOMAN', HolidayType.OFFICIAL_HOLIDAY))
+        }
+
         int workingDays = 0
         while (date.isBefore(endOfMonth) || date.isEqual(endOfMonth)) {
             if (isWorkingDay(date, workingDaysPattern) && !isHoliday(date, holidays)) {
