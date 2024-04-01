@@ -11,6 +11,7 @@ class UserCommand implements Validateable {
     String firstname
     String lastname
     Boolean enabled
+    Boolean isAdmin
 
     User.UserGermanState germanState
 
@@ -22,6 +23,7 @@ class UserCommand implements Validateable {
                 if (otherUser && otherUser.id != obj.user?.id) return ['unique']
             }
         }
+        isAdmin nullable: true
         importFrom User
     }
 }

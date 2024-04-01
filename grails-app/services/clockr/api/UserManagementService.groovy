@@ -33,6 +33,12 @@ class UserManagementService {
             notificationService.sendMailByView(user, "Für dich wurde ein Account erstellt", "/email/setPasswordNewUser", model)
             UserRole.create(user, Role.findByAuthority('ROLE_USER'), true)
         }
+        if (!cmd.isAdmin && user.authorities?.any { it.authority == 'ROLE_ADMIN'}) {
+            UserRole.remove(user, Role.findByAuthority('ROLE_ADMIN'))
+        }
+        if (cmd.isAdmin && !user.authorities?.any { it.authority == 'ROLE_ADMIN'}) {
+            UserRole.create(user, Role.findByAuthority('ROLE_ADMIN'), true)
+        }
         return getUser(user.id)
     }
 
@@ -65,7 +71,8 @@ class UserManagementService {
                 firstname  : user.firstname,
                 lastname   : user.lastname,
                 germanState: user.germanState?.name(),
-                enabled    : user.enabled
+                enabled    : user.enabled,
+                isAdmin    : user.authorities?.any { it.authority == 'ROLE_ADMIN' }
         ]
     }
 
@@ -78,7 +85,8 @@ class UserManagementService {
                 lastname   : user.lastname,
                 germanState: user.germanState?.name(),
                 enabled    : user.enabled,
-                contracts  : user.contracts?.collect { getContractModel(it.id) }
+                contracts  : user.contracts?.collect { getContractModel(it.id) },
+                isAdmin    : user.authorities?.any { it.authority == 'ROLE_ADMIN' }
         ]
     }
 
