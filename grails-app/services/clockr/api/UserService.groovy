@@ -46,20 +46,20 @@ class UserService {
             User user = User.get(userId)
             Contract[] contracts = userContractService.getContractsForMonth(userId, year, month)
             if (contracts) {
-                Float targetHours = contracts.sum { contract ->
+                Float targetHours = contracts?.sum { contract ->
                     Integer workingDaysAmount = WorkingDayCalculator.countWorkingDays(year, month, contract.startAt, contract.endAt, contract.workingDays, user?.germanState?.name()?.toLowerCase())
                     return workingDaysAmount * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
-                }
-                Float isHours = userWorkingTimeService.getWorkingTimeForMonth(userId, year, month) ?: 0
+                } ?: 0
+                Float isHours = (userWorkingTimeService.getWorkingTimeForMonth(userId, year, month) ?: 0) + (contracts?.sum {contract ->
+                    Integer contractIllnessCount = userDayItemService.countDayItemsByTypeForMonthAndContract(userId, contract.id, DayItem.DayItemType.ILLNESS, year, month)
+                    Integer contractVacationCount = userDayItemService.countDayItemsByTypeForMonthAndContract(userId, contract.id, DayItem.DayItemType.VACATION, year, month)
+                    return (contractIllnessCount + contractVacationCount) * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
+                } ?: 0)
                 Integer breakfastCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.BREAKFAST, year, month)
                 Integer lunchCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.LUNCH, year, month)
                 Integer illnessCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.ILLNESS, year, month)
                 Integer vacationCount = userDayItemService.countDayItemsByTypeForMonth(userId, DayItem.DayItemType.VACATION, year, month)
-                Float difference = isHours - targetHours + contracts.sum {contract ->
-                    Integer contractIllnessCount = userDayItemService.countDayItemsByTypeForMonthAndContract(userId, contract.id, DayItem.DayItemType.ILLNESS, year, month)
-                    Integer contractVacationCount = userDayItemService.countDayItemsByTypeForMonthAndContract(userId, contract.id, DayItem.DayItemType.VACATION, year, month)
-                    return (contractIllnessCount + contractVacationCount) * (contract.hoursPerWeek / userContractService.getDaysPerWeek(contract.id))
-                }
+                Float difference = isHours - targetHours
                 return [
                         hoursPerWeek  : contracts?.sort { it.startAt }?.collect { contract -> contract.hoursPerWeek },
                         daysPerWeek   : contracts?.sort { it.startAt }?.collect { contract -> userContractService.getDaysPerWeek(contract.id) },
