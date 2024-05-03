@@ -16,6 +16,9 @@ class UrlMappings {
                 post "/$userId/contract" (controller: 'userManagement', action: 'createContract')
                 put "/$userId/contract/$id" (controller: 'userManagement', action: 'updateContract')
                 delete "/$userId/contract/$id" (controller: 'userManagement', action: 'deleteContract')
+
+                post "/$id/lock-month/$year/$month" (controller: 'userManagement', action: 'lockMonth')
+                delete "/$id/lock-month/$year/$month" (controller: 'userManagement', action: 'unlockMonth')
             }
     
             group "/user", {

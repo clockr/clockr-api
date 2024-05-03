@@ -10,15 +10,16 @@ class UserController extends RestController {
 
     def getMonth() {
         def result = [
-                days  : userService.getMonthDays(params.int('id'), params.int('year'), params.int('month')),
-                result: userService.getMonthResult(params.int('id'), params.int('year'), params.int('month'))
+                days    : userService.getMonthDays(params.int('id'), params.int('year'), params.int('month')),
+                result  : userService.getMonthResult(params.int('id'), params.int('year'), params.int('month')),
+                isLocked: userService.isMonthLocked(params.int('id'), params.int('year'), params.int('month'))
         ]
         renderJson(result)
     }
 
     def getYear() {
         def result = [
-                months: userService.getYearMonths(params.int('id'), params.int('year')),
+                months  : userService.getYearMonths(params.int('id'), params.int('year')),
                 overview: userService.getYearOverview(params.int('id'), params.int('year'))
         ]
         renderJson(result)

@@ -102,4 +102,23 @@ class UserManagementService {
                 vacationDaysPerYear: contract.vacationDaysPerYear
         ]
     }
+
+    def lockMonth(Long userId, Integer year, Integer month) {
+        User user = User.get(userId)
+        LockedMonth lockedMonth = LockedMonth.findByUserAndYearAndMonth(user, year, month)
+        if (!lockedMonth) {
+            lockedMonth = new LockedMonth(user: user, year: year, month: month)
+            lockedMonth.save()
+        }
+        return true
+    }
+
+    def unlockMonth(Long userId, Integer year, Integer month) {
+        User user = User.get(userId)
+        LockedMonth lockedMonth = LockedMonth.findByUserAndYearAndMonth(user, year, month)
+        if (lockedMonth) {
+            lockedMonth.delete()
+        }
+        return true
+    }
 }

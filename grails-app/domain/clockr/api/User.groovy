@@ -46,7 +46,7 @@ class User implements Serializable {
         (UserRole.findAllByUser(this) as List<UserRole>)*.role as Set<Role>
     }
 
-    static hasMany = [contracts: Contract, workingTimes: WorkingTime, dayItems: DayItem, manualEntries: ManualEntry]
+    static hasMany = [contracts: Contract, workingTimes: WorkingTime, dayItems: DayItem, manualEntries: ManualEntry, lockedMonths: LockedMonth]
 
     static constraints = {
         password nullable: false, blank: false, password: true
