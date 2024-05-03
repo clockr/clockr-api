@@ -159,4 +159,25 @@ class UserService {
         }
         return true
     }
+
+    Boolean isDateInLockedMonth(Long userId, Date date) {
+        if (userAccessService.hasUserAccess(userId)) {
+            User user = User.get(userId)
+            def lockedMonth = user.lockedMonths?.find {
+                LocalDate monthStart = LocalDate.of(it.year, it.month, 1)
+                LocalDate monthEnd = monthStart.withDayOfMonth(monthStart.lengthOfMonth()).plusDays(1)
+                LocalDate localDate = date.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate()
+                return localDate >= monthStart && localDate < monthEnd
+            }
+            return lockedMonth
+        }
+        return true
+    }
+
+    def isMonthLocked(Long userId, Integer year, Integer month) {
+        if (userAccessService.hasUserAccess(userId)) {
+            User user = User.get(userId)
+            return user.lockedMonths?.any { it.year == year && it.month == month }
+        }
+    }
 }

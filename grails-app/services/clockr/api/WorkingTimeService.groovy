@@ -7,21 +7,26 @@ import grails.gorm.transactions.Transactional
 class WorkingTimeService {
 
     def userAccessService
+    def userService
 
     def saveWorkingTime(WorkingTimeCommand cmd) {
         if (userAccessService.hasUserAccess(cmd.user?.id)) {
-            WorkingTime workingTime = cmd.workingTime
-            workingTime.setProperties(cmd)
-            workingTime.save()
-            return getWorkingTime(workingTime.id)
+            if (!userService.isDateInLockedMonth(cmd.user?.id, cmd.startAt) && !userService.isDateInLockedMonth(cmd.user?.id, cmd.endAt)) {
+                WorkingTime workingTime = cmd.workingTime
+                workingTime.setProperties(cmd)
+                workingTime.save()
+                return getWorkingTime(workingTime.id)
+            }
         }
     }
 
     def deleteWorkingTime(Long id) {
         WorkingTime workingTime = WorkingTime.get(id)
         if (userAccessService.hasUserAccess(workingTime?.userId)) {
-            workingTime.delete()
-            return true
+            if (!userService.isDateInLockedMonth(workingTime?.userId, workingTime?.startAt) && !userService.isDateInLockedMonth(workingTime?.userId, workingTime?.endAt)) {
+                workingTime.delete()
+                return true
+            }
         }
     }
 

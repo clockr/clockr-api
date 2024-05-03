@@ -46,4 +46,12 @@ class UserManagementController extends RestController {
     def deleteContract() {
         renderJson(userManagementService.deleteContract(params.int('id')))
     }
+
+    def lockMonth() {
+        renderJson(userManagementService.lockMonth(params.int('id'), params.int('year'), params.int('month')))
+    }
+
+    def unlockMonth() {
+        renderJson(userManagementService.unlockMonth(params.int('id'), params.int('year'), params.int('month')))
+    }
 }
