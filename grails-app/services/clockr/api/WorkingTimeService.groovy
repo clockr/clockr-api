@@ -11,7 +11,7 @@ class WorkingTimeService {
 
     def saveWorkingTime(WorkingTimeCommand cmd) {
         if (userAccessService.hasUserAccess(cmd.user?.id)) {
-            if (!userService.isDateInLockedMonth(cmd.user?.id, cmd.startAt) && !userService.isDateInLockedMonth(cmd.user?.id, cmd.endAt)) {
+            if (!userService.isDateInLockedMonth(cmd.user?.id, cmd.startAt) && (!cmd.endAt || !userService.isDateInLockedMonth(cmd.user?.id, cmd.endAt))) {
                 WorkingTime workingTime = cmd.workingTime
                 workingTime.setProperties(cmd)
                 workingTime.save()
@@ -23,7 +23,7 @@ class WorkingTimeService {
     def deleteWorkingTime(Long id) {
         WorkingTime workingTime = WorkingTime.get(id)
         if (userAccessService.hasUserAccess(workingTime?.userId)) {
-            if (!userService.isDateInLockedMonth(workingTime?.userId, workingTime?.startAt) && !userService.isDateInLockedMonth(workingTime?.userId, workingTime?.endAt)) {
+            if (!userService.isDateInLockedMonth(workingTime?.userId, workingTime?.startAt) && (!workingTime?.endAt || !userService.isDateInLockedMonth(workingTime?.userId, workingTime?.endAt))) {
                 workingTime.delete()
                 return true
             }
