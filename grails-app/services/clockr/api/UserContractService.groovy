@@ -42,9 +42,9 @@ class UserContractService {
 
     Integer getVacationForYear(Long userId, Integer year) {
         Contract[] contracts = getContractsForYear(userId, year)
-        return contracts?.sum { contract ->
+        return Math.round(contracts?.sum { contract ->
             getContractYearMultiplier(contract.id, year) * contract.vacationDaysPerYear
-        } as Integer
+        } as Float)
     }
 
     Float getContractYearMultiplier(Long contractId, Integer year) {
