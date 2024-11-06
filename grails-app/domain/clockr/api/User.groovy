@@ -42,6 +42,8 @@ class User implements Serializable {
 
     UserGermanState germanState
 
+    Boolean isArchived = false
+
     Set<Role> getAuthorities() {
         (UserRole.findAllByUser(this) as List<UserRole>)*.role as Set<Role>
     }
@@ -54,6 +56,7 @@ class User implements Serializable {
         firstname nullable: true
         lastname nullable: true
         germanState nullable: true
+        isArchived nullable: true
     }
 
     static mapping = {
