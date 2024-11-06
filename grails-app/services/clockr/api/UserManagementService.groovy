@@ -72,7 +72,8 @@ class UserManagementService {
                 lastname   : user.lastname,
                 germanState: user.germanState?.name(),
                 enabled    : user.enabled,
-                isAdmin    : user.authorities?.any { it.authority == 'ROLE_ADMIN' }
+                isAdmin    : user.authorities?.any { it.authority == 'ROLE_ADMIN' },
+                isArchived : user.isArchived
         ]
     }
 
@@ -86,7 +87,8 @@ class UserManagementService {
                 germanState: user.germanState?.name(),
                 enabled    : user.enabled,
                 contracts  : user.contracts?.collect { getContractModel(it.id) },
-                isAdmin    : user.authorities?.any { it.authority == 'ROLE_ADMIN' }
+                isAdmin    : user.authorities?.any { it.authority == 'ROLE_ADMIN' },
+                isArchived : user.isArchived
         ]
     }
 

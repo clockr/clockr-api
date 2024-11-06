@@ -12,6 +12,7 @@ class UserCommand implements Validateable {
     String lastname
     Boolean enabled
     Boolean isAdmin
+    Boolean isArchived
 
     User.UserGermanState germanState
 
@@ -24,6 +25,7 @@ class UserCommand implements Validateable {
             }
         }
         isAdmin nullable: true
+        isArchived nullable: true
         importFrom User
     }
 }
