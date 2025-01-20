@@ -25,7 +25,6 @@ class UserCommand implements Validateable {
             }
         }
         isAdmin nullable: true
-        isArchived nullable: true
         importFrom User
     }
 }
