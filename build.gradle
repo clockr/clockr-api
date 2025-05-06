@@ -11,7 +11,7 @@ buildscript {
     }
 }
 
-version "0.5.3"
+version "0.5.4"
 group "clockr.api"
 
 apply plugin:"eclipse"
