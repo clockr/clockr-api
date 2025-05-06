@@ -31,6 +31,9 @@ class WorkingDayCalculator {
         if (year >= 2023 && stateCode?.toLowerCase() == 'mv') {
             holidays.add(new Holiday(LocalDate.of(year, 3, 8), 'INTERNATIONAL_WOMAN', HolidayType.OFFICIAL_HOLIDAY))
         }
+        if (year == 2025 && stateCode?.toLowerCase() == 'be') {
+            holidays.add(new Holiday(LocalDate.of(year, 5, 8), 'LIBERATION_FROM_NATIONAL_SOCIALISM', HolidayType.OFFICIAL_HOLIDAY))
+        }
 
         def days = []
         while (date.isBefore(endOfMonth) || date.isEqual(endOfMonth)) {
@@ -64,6 +67,9 @@ class WorkingDayCalculator {
 
         if (year >= 2023 && stateCode?.toLowerCase() == 'mv') {
             holidays.add(new Holiday(LocalDate.of(year, 3, 8), 'INTERNATIONAL_WOMAN', HolidayType.OFFICIAL_HOLIDAY))
+        }
+        if (year == 2025 && stateCode?.toLowerCase() == 'be') {
+            holidays.add(new Holiday(LocalDate.of(year, 5, 8), 'LIBERATION_FROM_NATIONAL_SOCIALISM', HolidayType.OFFICIAL_HOLIDAY))
         }
 
         int workingDays = 0
