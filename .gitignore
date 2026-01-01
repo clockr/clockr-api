@@ -14,3 +14,5 @@ out/
 development.yml
 staging.yml
 production.yml
+
+docker-compose.yml

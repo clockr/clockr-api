@@ -15,9 +15,7 @@ class UserWorkingTimeService {
 
         return workingTimes?.findAll { workingTime ->
             LocalDate startAt = workingTime.startAt.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate()
-            LocalDate endAt = workingTime.endAt ? workingTime.endAt.toInstant().atZone(ZoneId.of("Europe/Berlin")).toLocalDate() : startAt
-
-            return !(startAt.isAfter(targetEnd) || endAt.isBefore(targetStart))
+            return !startAt.isBefore(targetStart) && !startAt.isAfter(targetEnd)
         }?.sum { workingTime ->
             return getGrossWorkingTimeInHours(workingTime.id)
         }
